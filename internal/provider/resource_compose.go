@@ -34,6 +34,7 @@ type ComposeResourceModel struct {
 	ID            types.String `tfsdk:"id"`
 	EnvironmentID types.String `tfsdk:"environment_id"`
 	Name          types.String `tfsdk:"name"`
+	AppNamePrefix types.String `tfsdk:"app_name_prefix"`
 	AppName       types.String `tfsdk:"app_name"`
 	Description   types.String `tfsdk:"description"`
 	ServerID      types.String `tfsdk:"server_id"`
@@ -130,10 +131,16 @@ func (r *ComposeResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Required:    true,
 				Description: "The display name of the compose stack.",
 			},
-			"app_name": schema.StringAttribute{
+			"app_name_prefix": schema.StringAttribute{
 				Optional:    true,
+				Description: "Prefix for the Docker service app name. Dokploy appends a random suffix to produce the final app_name. If not specified, the compose name is used as the prefix. Changing this forces a new resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"app_name": schema.StringAttribute{
 				Computed:    true,
-				Description: "The app name used for Docker service naming. Auto-generated if not specified.",
+				Description: "The actual app name used for Docker service naming (includes the server-generated suffix).",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -448,6 +455,7 @@ func (r *ComposeResource) Create(ctx context.Context, req resource.CreateRequest
 
 	comp := client.Compose{
 		Name:              plan.Name.ValueString(),
+		AppName:           plan.AppNamePrefix.ValueString(),
 		EnvironmentID:     plan.EnvironmentID.ValueString(),
 		ComposeFile:       plan.ComposeFileContent.ValueString(),
 		Env:               plan.Env.ValueString(),

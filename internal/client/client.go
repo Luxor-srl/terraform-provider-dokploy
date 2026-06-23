@@ -1581,11 +1581,18 @@ func (c *DokployClient) CreateCompose(comp Compose) (*Compose, error) {
 		composeType = "docker-compose"
 	}
 
+	// Dokploy appends a random suffix to appName to guarantee uniqueness.
+	// Use the explicit app_name prefix when provided, otherwise fall back to the name.
+	appName := comp.AppName
+	if appName == "" {
+		appName = comp.Name
+	}
+
 	payload := map[string]interface{}{
 		"environmentId": comp.EnvironmentID,
 		"name":          comp.Name,
 		"composeType":   composeType,
-		"appName":       comp.Name,
+		"appName":       appName,
 	}
 
 	// Include serverId if provided

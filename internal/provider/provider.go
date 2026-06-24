@@ -138,6 +138,7 @@ func (p *DokployProvider) DataSources(_ context.Context) []func() datasource.Dat
 		NewDockerContainerDataSource,
 		NewDockerContainersDataSource,
 		NewEnvironmentDataSource,
+		NewProjectDataSource,
 	}
 }
 

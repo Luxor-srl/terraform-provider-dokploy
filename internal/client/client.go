@@ -610,6 +610,20 @@ func (c *DokployClient) GetProject(id string) (*Project, error) {
 	return &result, nil
 }
 
+// ListProjects retrieves all projects. Uses the project.all endpoint.
+func (c *DokployClient) ListProjects() ([]Project, error) {
+	resp, err := c.doRequest("GET", "project.all", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var projects []Project
+	if err := json.Unmarshal(resp, &projects); err != nil {
+		return nil, fmt.Errorf("failed to parse projects response: %w", err)
+	}
+	return projects, nil
+}
+
 func (c *DokployClient) DeleteProject(id string) error {
 	payload := map[string]string{
 		"projectId": id,
